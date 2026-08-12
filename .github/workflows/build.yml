@@ -22,6 +22,17 @@ jobs:
         curl -L https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
         unzip -q gradle.zip
         echo "$HOME/gradle/gradle-8.7/bin" >> $GITHUB_PATH
+    - name: Debug file structure
+      run: |
+        pwd
+        echo "========== 文件列表 =========="
+        ls -la
+        echo "========== settings.gradle =========="
+        cat settings.gradle 2>/dev/null || echo "NOT FOUND"
+        echo "========== build.gradle =========="
+        cat build.gradle 2>/dev/null || echo "NOT FOUND"
+        echo "========== app目录 =========="
+        ls -la app/ 2>/dev/null || echo "NOT FOUND"
     - name: Build APK
       run: |
         echo "sdk.dir=$ANDROID_HOME" > local.properties
