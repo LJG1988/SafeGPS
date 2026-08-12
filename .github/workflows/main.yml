@@ -15,11 +15,18 @@ jobs:
     - uses: android-actions/setup-android@v3
       with:
         packages: 'platforms;android-34 build-tools;34.0.0'
+    - name: Setup Gradle
+      run: |
+        cd $GITHUB_WORKSPACE
+        echo "sdk.dir=$ANDROID_HOME" > local.properties
+        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+          mkdir -p gradle/wrapper
+          curl -L https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
+        fi
     - name: Build
       run: |
-        echo "sdk.dir=$ANDROID_HOME" > local.properties
-        chmod +x gradlew
-        ./gradlew assembleDebug
+        cd $GITHUB_WORKSPACE
+        java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain assembleDebug
     - uses: actions/upload-artifact@v4
       with:
         name: SafeGPS-APK
