@@ -15,10 +15,17 @@ jobs:
     - uses: android-actions/setup-android@v3
       with:
         packages: 'platforms;android-34 build-tools;34.0.0'
+    - name: Setup Gradle
+      run: |
+        mkdir -p ~/gradle
+        cd ~/gradle
+        curl -L https://services.gradle.org/distributions/gradle-8.7-bin.zip -o gradle.zip
+        unzip -q gradle.zip
+        echo "$HOME/gradle/gradle-8.7/bin" >> $GITHUB_PATH
     - name: Build APK
       run: |
         echo "sdk.dir=$ANDROID_HOME" > local.properties
-        java -cp gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain assembleDebug
+        gradle assembleDebug
     - uses: actions/upload-artifact@v4
       with:
         name: SafeGPS-APK
