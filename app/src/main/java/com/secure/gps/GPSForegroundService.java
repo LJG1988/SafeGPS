@@ -30,35 +30,38 @@ public class GPSForegroundService extends Service {
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         handler = new Handler(Looper.getMainLooper());
         GPSInjector.initTestProvider(locationManager);
+        createNotificationChannel();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        try {
-            createNotificationChannel();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(NOTIFICATION_ID, buildNotification(),
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
-            } else {
-                startForeground(NOTIFICATION_ID, buildNotification());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        Notification notification = buildNotification();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
         }
+
         startInjecting();
         isRunning = true;
         return START_STICKY;
     }
 
     private void startInjecting() {
+        handler.removeCallbacks(injectRunnable);
         injectRunnable = new Runnable() {
             @Override
             public void run() {
-                double[] coords = GPSInjector.addWander(
-                    CoordinateConverter.TARGET_WGS84[0],
-                    CoordinateConverter.TARGET_WGS84[1]
-                );
-                GPSInjector.injectLocation(locationManager, coords[0], coords[1]);
+                try {
+                    double[] coords = GPSInjector.addWander(
+                        CoordinateConverter.TARGET_WGS84[0],
+                        CoordinateConverter.TARGET_WGS84[1]
+                    );
+                    GPSInjector.injectLocation(locationManager, coords[0], coords[1]);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 handler.postDelayed(this, 1000);
             }
         };
